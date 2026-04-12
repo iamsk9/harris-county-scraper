@@ -1,0 +1,40 @@
+name: Scrape Motivated Sellers
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 7 AM UTC every day
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r scraper/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run Scraper
+        run: python scraper/fetch.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/records.json dashboard/records.json data/ghl_export.csv || true
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update records"
+          git push
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard
