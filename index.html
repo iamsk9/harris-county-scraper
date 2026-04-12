@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harris County Motivated Sellers</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --border: #334155;
+            --positive: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%);
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--panel-bg);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--accent-glow);
+            border-color: var(--accent);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="text"] {
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--panel-bg);
+            color: var(--text-main);
+            width: 300px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .table-container {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .score-high { background: rgba(16, 185, 129, 0.2); color: var(--positive); border: 1px solid rgba(16, 185, 129, 0.5); }
+        .score-med { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.5); }
+        .score-low { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.5); }
+
+        .tag-pill {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin: 2px;
+            color: #cbd5e1;
+        }
+
+        a.url-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        a.url-btn:hover {
+            background: #2563eb;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Motivated Seller Leads</h1>
+        <p style="color: var(--text-muted);">Harris County Automated Scraper</p>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">-</div>
+                <div class="stat-label">Total Leads Found</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-hscore">-</div>
+                <div class="stat-label">High Intent (Score 60+)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-date">-</div>
+                <div class="stat-label">Last Updated</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search by Owner, ID, or Address..." onkeyup="filterTable()">
+        </div>
+
+        <div id="loading" class="loader"></div>
+
+        <div class="table-container fade-in hidden" id="mainContent">
+            <table id="leadsTable">
+                <thead>
+                    <tr>
+                        <th>Score</th>
+                        <th>Owner / Entity</th>
+                        <th>Doc Type</th>
+                        <th>Address Target</th>
+                        <th>Debt Amount</th>
+                        <th>Motivated Flags</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>Built with GitHub Actions Automation • Strictly for Lead Generation Analytics</p>
+    </footer>
+
+    <script>
+        let fullData = [];
+
+        async function init() {
+            try {
+                const response = await fetch('./records.json');
+                const data = await response.json();
+                
+                fullData = data.records;
+                
+                // Sort by score descending directly
+                fullData.sort((a,b) => (b.score || 0) - (a.score || 0));
+
+                // Populate Stats
+                document.getElementById('stat-total').innerText = fullData.length;
+                document.getElementById('stat-hscore').innerText = fullData.filter(r => r.score >= 60).length;
+                
+                if(data.fetched_at) {
+                    const dateObj = new Date(data.fetched_at);
+                    document.getElementById('stat-date').innerText = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
+                } else {
+                    document.getElementById('stat-date').innerText = "Never";
+                }
+
+                renderTable(fullData);
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+
+            } catch (err) {
+                console.error("Failed to load records.json", err);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('mainContent').innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger);">Error loading data. Make sure records.json exists and GitHub Pages is done building.</p>`;
+                document.getElementById('mainContent').classList.remove('hidden');
+            }
+        }
+
+        function renderTable(records) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            records.forEach(repo => {
+                const tr = document.createElement('tr');
+                
+                // Score formatting
+                let scoreClass = 'score-low';
+                if(repo.score >= 65) scoreClass = 'score-high';
+                else if(repo.score >= 40) scoreClass = 'score-med';
+
+                // Flags
+                let flagsHtml = (repo.flags || []).map(f => `<span class="tag-pill">${f}</span>`).join('');
+
+                tr.innerHTML = `
+                    <td><div class="score-badge ${scoreClass}">${repo.score || 0}</div></td>
+                    <td style="font-weight: 600;">${repo.owner || 'N/A'}<br><small style="color: var(--text-muted); font-weight: normal;">${repo.doc_num}</small></td>
+                    <td><span class="tag-pill" style="background: rgba(139, 92, 246, 0.3); color: #ddd6fe;">${repo.doc_type || 'Unknown'}</span><br><small style="color: var(--text-muted);">Filed: ${repo.filed}</small></td>
+                    <td>${repo.prop_address || '<span style="color:var(--text-muted)">Unmatched via DBF</span>'}</td>
+                    <td style="font-weight: 600; color: #fff;">${repo.amount && repo.amount !== '0' ? repo.amount : '-'}</td>
+                    <td>${flagsHtml || '-'}</td>
+                    <td><a href="${repo.clerk_url}" target="_blank" class="url-btn">View Clerk</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = fullData.filter(r => 
+                (r.owner || '').toLowerCase().includes(query) || 
+                (r.doc_num || '').toLowerCase().includes(query) ||
+                (r.prop_address || '').toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        }
+
+        // Boot
+        init();
+    </script>
+</body>
+</html>
