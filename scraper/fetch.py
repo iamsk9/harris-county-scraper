@@ -235,17 +235,16 @@ async def scrape_clerk_portal():
                 print(f"Found {len(rows)} potential records on page.")
                 for row in rows:
                     cells = await row.locator("td").all_inner_texts()
-                    if len(cells) >= 6:
+                    if len(cells) >= 4:
                         doc_num = cells[0].strip()
-                        doc_type = cells[1].strip()
-                        filed_date = cells[2].strip()
+                        filed_date = cells[1].strip()
+                        doc_type = cells[2].strip()
                         grantor = cells[3].strip()
-                        grantee = cells[4].strip()
-                        amount = cells[5].strip() if len(cells) > 5 else "0"
+                        grantee = ""
+                        amount = "0"
                         
-                        legal_desc = ""
-                        if len(cells) > 6:
-                            legal_desc = cells[6].strip()
+                        # The amount might be inside description/comments which is 4th index
+                        legal_desc = cells[4].strip() if len(cells) > 4 else ""
                         
                         # Match only requested Lead types if doc_type partially matches
                         if any(lt in doc_type.upper() for lt in LEAD_TYPES):
