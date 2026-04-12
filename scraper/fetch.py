@@ -217,21 +217,21 @@ async def scrape_clerk_portal():
             # Using partial matches common for ASP.NET WebForms. 
             print(f"Setting date: {start_date.strftime('%m/%d/%Y')} to {end_date.strftime('%m/%d/%Y')}")
             try:
-                await page.fill('input[id*="DateFrom"]', start_date.strftime('%m/%d/%Y'))
-                await page.fill('input[id*="DateTo"]', end_date.strftime('%m/%d/%Y'))
+                await page.fill('#ctl00_ContentPlaceHolder1_txtFrom', start_date.strftime('%m/%d/%Y'))
+                await page.fill('#ctl00_ContentPlaceHolder1_txtTo', end_date.strftime('%m/%d/%Y'))
             except Exception as e:
                 print(f"Warning: Could not set date range fields: {e}")
                 
             # Submit Search
             try:
-                await page.click('input[type="submit"][value*="Search"], button:has-text("Search")')
+                await page.click('#ctl00_ContentPlaceHolder1_btnSearch')
                 await page.wait_for_load_state("networkidle")
             except Exception as e:
                 print(f"Warning: Could not compile search click: {e}")
 
             # Parse Table
             try:
-                rows = await page.locator("table tr.GridRow, table tr.GridAltRow").all()
+                rows = await page.locator("table tr").all()
                 print(f"Found {len(rows)} potential records on page.")
                 for row in rows:
                     cells = await row.locator("td").all_inner_texts()
